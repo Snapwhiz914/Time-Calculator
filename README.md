@@ -5,6 +5,6 @@ An iOS app that helps the user build an intuition for time in the solar system.
 
 ## Screenshots
 
-Solar System                                          |  Calculator
-:----------------------------------------------------:|:-------------------------:
-![Solar System view](img/solar20system.png?raw=true)  |  ![Calculator view](img/calculator.png?raw=true) 
+Solar System                                           |  Calculator
+:-----------------------------------------------------:|:-------------------------:
+![Solar System view](img/solar%20system.png?raw=true)  |  ![Calculator view](img/calculator.png?raw=true) 
