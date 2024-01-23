@@ -19,6 +19,7 @@
 		936DC7172B4C5B9200D2507B /* SolarSystemScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936DC7162B4C5B9200D2507B /* SolarSystemScene.swift */; };
 		936DC7192B4EF00100D2507B /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936DC7182B4EF00100D2507B /* Data.swift */; };
 		937D85262B59A98300116F9A /* Astronomy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937D85252B59A98300116F9A /* Astronomy.swift */; };
+		93D47A6E2B5EFA8500B872E4 /* Horizons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D47A6D2B5EFA8400B872E4 /* Horizons.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		936DC7162B4C5B9200D2507B /* SolarSystemScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarSystemScene.swift; sourceTree = "<group>"; };
 		936DC7182B4EF00100D2507B /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		937D85252B59A98300116F9A /* Astronomy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Astronomy.swift; sourceTree = "<group>"; };
+		93D47A6D2B5EFA8400B872E4 /* Horizons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Horizons.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				936DC7142B4C583100D2507B /* SolarSystemView.swift */,
 				936DC7162B4C5B9200D2507B /* SolarSystemScene.swift */,
 				936DC7182B4EF00100D2507B /* Data.swift */,
+				93D47A6D2B5EFA8400B872E4 /* Horizons.swift */,
 			);
 			path = "Time Calculator";
 			sourceTree = "<group>";
@@ -277,6 +280,7 @@
 				936DC7172B4C5B9200D2507B /* SolarSystemScene.swift in Sources */,
 				936DC7152B4C583100D2507B /* SolarSystemView.swift in Sources */,
 				936DC6E92B4B6C4300D2507B /* Time_CalculatorApp.swift in Sources */,
+				93D47A6E2B5EFA8500B872E4 /* Horizons.swift in Sources */,
 				937D85262B59A98300116F9A /* Astronomy.swift in Sources */,
 				936DC7132B4B757B00D2507B /* Calculator.swift in Sources */,
 			);
