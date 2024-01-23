@@ -26,7 +26,6 @@ struct SolarSystemView: View {
     
     init() {
         sSScene.scaleMode = .resizeFill
-        changePlanetPosition()
     }
     
     func changePlanetPosition() {

@@ -18,8 +18,7 @@ extension String {
 }
 
 class Horizons {
-
-    var planetNamesAndIDs = ["Mercury": 199,
+    let planetNamesAndIDs = ["Mercury": 199,
                              "Venus": 299,
                              "Earth": 399,
                              "Mars": 499,
@@ -27,11 +26,15 @@ class Horizons {
                              "Saturn": 699,
                              "Uranus": 799,
                              "Neptune": 899]
+    let numberFormatter = NumberFormatter()
     
     init() {
-        
+        numberFormatter.numberStyle = .scientific
     }
     
+    /**
+    Takes a date and turns it to "yyyy-MM-dd" for horizons
+     */
     private func getDateStringForAPI(date: Date) -> String {
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
@@ -42,8 +45,8 @@ class Horizons {
     Makes the http call and returns a 2d array of arrays of length 2 of doubles of distances from sun in AU.
      If there is a request error, check the cache for a previously requested datapoint
      */
-    private func getXYInAU(startDate: Date, endDate: Date, planet: String, callback: (([[Double]]) -> Void)) {
-        let url = URL(string: "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND='\(planetNamesAndIDs[planet])'&OBJ_DATA='NO'&MAKE_EPHEM='YES'&EPHEM_TYPE='VECTORS'&CENTER='500@10'&START_TIME='\(getDateStringForAPI(startDate))'&STOP_TIME='\(getDateStringForAPI(date: endDate))'&STEP_SIZE='1%20d'&VEC_TABLE='1x'&CSV_FORMAT='YES'&OUT_UNITS='AU-D'")
+    public func getXYInAU(startDate: Date, endDate: Date, planet: Planet, callback: @escaping (([[Double]]) -> Void)) {
+        let url = URL(string: "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND='\(planetNamesAndIDs[planet.name]!)'&OBJ_DATA='NO'&MAKE_EPHEM='YES'&EPHEM_TYPE='VECTORS'&CENTER='500@10'&START_TIME='\(getDateStringForAPI(date: startDate))'&STOP_TIME='\(getDateStringForAPI(date: endDate))'&STEP_SIZE='1%20d'&VEC_TABLE='1x'&CSV_FORMAT='YES'&OUT_UNITS='AU-D'")!
         
         let session = URLSession.shared
         var request = URLRequest(url: url)
@@ -63,10 +66,11 @@ class Horizons {
             }
             
             do {
-                let json = try JSONSerialization.jsonObject(with: data, options: [])
-                callback(interpretHorizonData(jsonObject: json))
+                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:Any]
+                let raw = json!["result"] as! String
+                callback(self.interpretHorizonData(rawResultString: raw))
             } catch {
-                print("Error decoding JSON: \(error)")
+                print("Error decoding JSON: \(error), data: \(String(data: data, encoding: .utf8))")
             }
         }
         
@@ -74,22 +78,21 @@ class Horizons {
     }
     
     /**
-        
+    Helper method to parse the data from horizons
      */
-    private func interpretHorizonData(jsonObject: Any) -> ([[Double]]) {
-        let rawResultString = jsonObject?["result"] as! String
+    private func interpretHorizonData(rawResultString: String) -> ([[Double]]) {
         let csvList = rawResultString.slice(from: "$$SOE", to: "$$EOE")
         
         var array = [[Double]]()
-        for line in rawResultString.split(",") {
+        for line in csvList!.split(separator: "\n") {
             var i = 0
-            var toAdd = [Double]
-            for value in line.split(",") {
+            var toAdd = [Double]()
+            for value in line.split(separator: ",") {
                 if i == 2 {
-                    toAdd[0] = Double(value)
+                    toAdd.append(Double(numberFormatter.number(from: String(value))!))
                 }
                 if i == 3 {
-                    toAdd[1] = Double(value)
+                    toAdd.append(Double(numberFormatter.number(from: String(value))!))
                 }
                 i += 1
             }

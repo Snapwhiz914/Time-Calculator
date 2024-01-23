@@ -35,11 +35,13 @@ class SolarSystemScene: SKScene {
     var initalCamScaleY = CGFloat()
     var currentPlanetNodes: [SKNode] = []
     var currentLabelNodes: [SKLabelNode] = []
+    let horizons: Horizons =  Horizons()
     
     override func didMove(to view: SKView) {
         print("Drawing...")
-        //createSun()
+        createSun()
         createPlanets()
+        drawPlanets(date: Date.now)
         scene?.anchorPoint = CGPoint(x: 0, y: 0)
         scene?.backgroundColor = .black
         
@@ -54,67 +56,45 @@ class SolarSystemScene: SKScene {
         scene?.view?.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(handlePinch)))
         scene?.view?.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handlePan)))
         
-        drawPlanets(date: Date.now)
         print("DM done")
     }
     
-//    func createSun() {
-//        let sun = SKSpriteNode(imageNamed: "the Sun")
-//        sun.position = CGPoint(x: size.width / 2, y: size.height / 2)
-//        sun.setScale(PlanetData.planets[0].drawScale) // Adjust the scale as needed
-//        sun.zPosition+=2;
-//        addChild(sun)
-//    }
+    func createSun() {
+        let sun = SKSpriteNode(imageNamed: "the Sun")
+        sun.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        sun.setScale(PlanetData.planets[0].drawScale) // Adjust the scale as needed
+        sun.zPosition+=2;
+        addChild(sun)
+    }
     
-    private func drawPlanet(planetData: Planet, planetNode: SKNode, label: SKLabelNode, date: Date, orbitalElements: OrbitalElements) {
-//        let planetSize = CGFloat(planetData.drawScale)
-//        let ratio = (daysSinceVernalEq/365)
-//        let angle = (ratio/planetData.orbitalPeriodYears)*(2*CGFloat.pi)
-//        let adjustedAngle = (angle
-//                             + (planetData.name != "Earth" ? 1.57-(ratio*(2*CGFloat.pi)) : 0)
-//                             - planetData.ascendingNodeOffset
-//                             + deg2rad(daysSinceAstroEpoch*planetData.aNOMultiplier))
-        var computedPosition = Astronomy.planetPosition(date: date, planet: orbitalElements)
-        var x = cos(computedPosition.0) * planetData.drawDistance + planetData.drawScale
-        var y = sin(computedPosition.1) * planetData.drawDistance + planetData.drawScale
-        switch planetData.name {
-        case "Mercury", "Venus", "Earth", "Saturn":
-            x *= -1
-        case "Jupiter":
-            x *= -1
-            y *= -1
-        case "Neptune", "Uranus":
-            y *= -1
-        default:
-            break
+    private func drawPlanet(planetData: Planet, planetNode: SKNode, label: SKLabelNode, date: Date) {
+        horizons.getXYInAU(startDate: date, endDate: Calendar.current.date(byAdding: .day, value: 1, to: date)!, planet: planetData) { position in
+            let x = cos(position[0][0]) * planetData.drawDistance + planetData.drawScale
+            print(x)
+            let y = sin(position[0][1]) * planetData.drawDistance + planetData.drawScale
+            print(y)
+            
+            planetNode.position = CGPoint(x: self.size.width / 2 + x, y: self.size.height / 2 + y)
+            label.position = CGPoint(x: self.size.width / 2 + x + (planetNode.frame.width/2) + (label.frame.width/2), y: self.size.height / 2 + y)
         }
-        //invert both, its upside down
-        
-        planetNode.position = CGPoint(x: size.width / 2 + x, y: size.height / 2 + y)
-        label.position = CGPoint(x: size.width / 2 + x + (planetNode.frame.width/2) + (label.frame.width/2), y: size.height / 2 + y)
     }
     
     func createSpaceObj(data: Planet, node: SKNode, label: SKLabelNode) {
         let angle = (Double.random(in: 0.0..<1.0))*(2*CGFloat.pi)
         let x = cos(angle) * Constants.SpaceObjDistance + CGFloat(data.drawScale)
         let y = sin(angle) * Constants.SpaceObjDistance + CGFloat(data.drawScale)
-        print(x)
-        print(y)
         node.position = CGPoint(x: size.width / 2 + x, y: size.height / 2 + y)
         label.position = CGPoint(x: size.width / 2 + x + (node.frame.width/2), y: size.height / 2 + y)
         label.fontSize *= data.drawScale
     }
     
     func createPlanets() {
-        var i = 0
         for planetData in PlanetData.planets {
+            if planetData.name == "the Sun" {continue}
             let imageName = planetData.name
             let planetSize = CGFloat(planetData.drawScale)
             let planetNode = SKSpriteNode(imageNamed: imageName)
             planetNode.setScale(planetSize)
-            if planetData.name == "the Sun" {
-                planetNode.zPosition += -1;
-            }
             
             let label = SKLabelNode(fontNamed: "AlNile-Bold")
             label.text = imageName
@@ -124,9 +104,7 @@ class SolarSystemScene: SKScene {
             label.verticalAlignmentMode = SKLabelVerticalAlignmentMode.center
             
             if planetData.inSS {
-                print(planetData.name)
-                print(i)
-                drawPlanet(planetData: planetData, planetNode: planetNode, label: label, date: Date.now, orbitalElements: PlanetData.orbitalElementsOfPlanets[i])
+                drawPlanet(planetData: planetData, planetNode: planetNode, label: label, date: Date.now)
                 
 //                let circlePath = CGMutablePath()
 //                circlePath.addArc(center: CGPoint(x: size.width / 2, y: size.height / 2), radius: planetData.drawDistance, startAngle: 0, endAngle: 0.001, clockwise: true)
@@ -145,17 +123,19 @@ class SolarSystemScene: SKScene {
             addChild(label)
             currentPlanetNodes.append(planetNode)
             currentLabelNodes.append(label)
-            i+=1
         }
     }
     
     func drawPlanets(date: Date) {
-        //TODO: Dont forget to calculate the angle of earth first then use it as an offset bc the line from earth to sun is VE line x axis
-        var i = 0
+        var i = 1
         for planetNode in currentPlanetNodes {
             if !PlanetData.planets[i].inSS {continue}
-            drawPlanet(planetData: PlanetData.planets[i], planetNode: planetNode, label: currentLabelNodes[i], date: date, orbitalElements: PlanetData.orbitalElementsOfPlanets[i])
-            i+=1;
+            let planetData = PlanetData.planets[i]
+            let label = currentLabelNodes[i]
+            var timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
+                self.drawPlanet(planetData: planetData, planetNode: planetNode, label: label, date: date)
+                i+=1;
+            })
         }
     }
     
