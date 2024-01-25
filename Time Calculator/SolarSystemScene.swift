@@ -69,10 +69,11 @@ class SolarSystemScene: SKScene {
     
     private func drawPlanet(planetData: Planet, planetNode: SKNode, label: SKLabelNode, date: Date) {
         horizons.getXYInAU(startDate: date, endDate: Calendar.current.date(byAdding: .day, value: 1, to: date)!, planet: planetData) { position in
-            let x = cos(position[0][0]) * planetData.drawDistance + planetData.drawScale
-            print(x)
-            let y = sin(position[0][1]) * planetData.drawDistance + planetData.drawScale
-            print(y)
+            print(planetData.name)
+            print("     " + String(format: "%f", position[0][0]) + ", " + String(format: "%f", position[0][1]))
+            let x = position[0][0] * planetData.drawDistance + planetData.drawScale
+            let y = position[0][1] * planetData.drawDistance + planetData.drawScale
+            print("     " + String(format: "%f", x) + ", " + String(format: "%f", y))
             
             planetNode.position = CGPoint(x: self.size.width / 2 + x, y: self.size.height / 2 + y)
             label.position = CGPoint(x: self.size.width / 2 + x + (planetNode.frame.width/2) + (label.frame.width/2), y: self.size.height / 2 + y)
@@ -104,7 +105,7 @@ class SolarSystemScene: SKScene {
             label.verticalAlignmentMode = SKLabelVerticalAlignmentMode.center
             
             if planetData.inSS {
-                drawPlanet(planetData: planetData, planetNode: planetNode, label: label, date: Date.now)
+                //drawPlanet(planetData: planetData, planetNode: planetNode, label: label, date: Date.now)
                 
 //                let circlePath = CGMutablePath()
 //                circlePath.addArc(center: CGPoint(x: size.width / 2, y: size.height / 2), radius: planetData.drawDistance, startAngle: 0, endAngle: 0.001, clockwise: true)
@@ -126,17 +127,18 @@ class SolarSystemScene: SKScene {
         }
     }
     
+    func drawPlanetsRecursiveHelper(date: Date, i: Int) {
+        if i > PlanetData.planets.count-1 {return}
+        _ = Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
+            if PlanetData.planets[i].inSS {
+                self.drawPlanet(planetData: PlanetData.planets[i], planetNode: self.currentPlanetNodes[i], label: self.currentLabelNodes[i], date: date)
+            }
+            self.drawPlanetsRecursiveHelper(date: date, i: i + 1)
+        })
+    }
+    
     func drawPlanets(date: Date) {
-        var i = 1
-        for planetNode in currentPlanetNodes {
-            if !PlanetData.planets[i].inSS {continue}
-            let planetData = PlanetData.planets[i]
-            let label = currentLabelNodes[i]
-            var timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
-                self.drawPlanet(planetData: planetData, planetNode: planetNode, label: label, date: date)
-                i+=1;
-            })
-        }
+        drawPlanetsRecursiveHelper(date: date, i: 1)
     }
     
     @objc func handlePinch(sender: UIPinchGestureRecognizer) {
